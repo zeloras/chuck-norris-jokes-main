@@ -6,3 +6,7 @@ __pycache__
 
 # IDE config files
 .idea
+
+
+# coverage report
+.coverage
