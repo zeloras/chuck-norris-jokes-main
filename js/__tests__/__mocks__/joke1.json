@@ -1,0 +1,9 @@
+{
+	"categories": ["test"],
+	"created_at": "2020-01-05 13:42:24.142371",
+	"icon_url": "https://assets.chucknorris.host/img/avatar/chuck-norris.png",
+	"id": "_tIdfTO3QxCuazpQYiVNYQ",
+	"updated_at": "2020-01-05 13:42:24.142371",
+	"url": "https://api.chucknorris.io/jokes/_tIdfTO3QxCuazpQYiVNYQ",
+	"value": "Chuck Norris mock test."
+}

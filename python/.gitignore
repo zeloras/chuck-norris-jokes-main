@@ -1,0 +1,8 @@
+# Virtual env directory.
+venv
+
+# Python compiles files
+__pycache__
+
+# IDE config files
+.idea

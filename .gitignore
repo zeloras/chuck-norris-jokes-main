@@ -1,0 +1,9 @@
+.vscode
+
+/python/venv
+__pycache__
+/python/.pytest_cache
+
+/js/node_modules
+
+.DS_Store
