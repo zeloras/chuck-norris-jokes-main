@@ -1,9 +1,21 @@
 # chuck-norris-jokes
 Chuck Norris Jokes server
+A service that provides Chuck Norris jokes with rate limiting based on subscription plans:
+
+### Rate Limiting Plans
+- **Free Plan**
+  - 1 request per second
+  - 50 requests per day limit
+- **Pro Plan**
+  - 10 requests per second
+  - 12,000 requests per day limit
+- **Enterprise Plan**
+  - 100 requests per second
+  - Unlimited daily requests
 
 ### Endpoints
 **GET /joke**</br>
-Get a Chuck Norris joke 
+Get a Chuck Norris joke
 
 **Headers**
 |          Name | Required |  Type   | Description                                                                                                                                                           |
@@ -19,7 +31,17 @@ Get a Chuck Norris joke
 }
 ```
 
-In order to run a requst run one of the following servers(NodeJs\ Python) and you can use this request
+### Configuration
+Create an `accounts.json` file in the root directory with your user tokens and plans:
+```json
+{
+    "1111-2222-3333": {
+        "plan": "PRO"
+    }
+}
+```
+Available plans: `FREE`, `PRO`, `ENTERPRISE`
+In order to run a requst you can use this request
 ```bash
 curl --location --request GET 'http://localhost:8000/joke' \
 --header 'Authorization: 1111-2222-3333'
@@ -42,15 +64,28 @@ To run the service you can use this command
 ********
 ## Python
 The project is under the `python` folder.
-First create virtualenv and activate it
 
-#### Installation
-`pip install -r /path/to/requirements.txt`
+### Running with Docker
+```bash
+# Build and start the services
+docker-compose up --build
+```
 
-#### Run tests
-To run the service tests
-`pytest`
+### Running Tests
+```bash
+# Run all tests
+docker-compose exec api pytest
+```
 
-#### Run the server
-To run the service you can use this command
-`uvicorn main:app`
+### Project Structure
+```
+python/
+├── rate_limit/           # Rate limiting implementation
+│   ├── limits.py        # Rate limiter logic
+│   └── plans.py         # Subscription plans definition
+├── tests/               # Test files
+├── auth.py             # Authentication middleware
+├── joke.py             # Joke model
+├── main.py             # FastAPI application
+└── requirements.txt    # Project dependencies
+```
