@@ -1,14 +1,19 @@
 from fastapi.testclient import TestClient
 from main import app
 from rate_limit.plans import Plan
-import json
 import pytest
 from unittest.mock import patch
 
 class TestJokeEndpoint:
     def setup_method(self):
+        self.auth_accounts_patcher = patch('auth.Auth.accounts', new={"1111-2222-3333": {"plan": "FREE"}})
+        self.mock_auth_accounts = self.auth_accounts_patcher.start()
+        
         self.client = TestClient(app)
         self.valid_token = "1111-2222-3333"
+
+    def teardown_method(self):
+        self.auth_accounts_patcher.stop()
 
     def test_invalid_token(self):
         response = self.client.get("/joke")
@@ -17,7 +22,7 @@ class TestJokeEndpoint:
         assert response.json() == {'error': 'Invalid request!'}
 
     def test_valid_token(self):
-        with patch('main.rate_limiter.is_allowed', return_value=True):
+        with patch('rate_limit.limits.RateLimiter.is_allowed', return_value=True):
             response = self.client.get(
                 "/joke",
                 headers={"Authorization": self.valid_token}
@@ -30,7 +35,7 @@ class TestJokeEndpoint:
             assert "joke" in joke_data
 
     def test_rate_limit_exceeded(self):
-        with patch('main.rate_limiter.is_allowed', return_value=False):
+        with patch('rate_limit.limits.RateLimiter.is_allowed', return_value=False):
             response = self.client.get(
                 "/joke",
                 headers={"Authorization": self.valid_token}
@@ -60,18 +65,20 @@ class TestJokeEndpoint:
         mock_accounts = {
             self.valid_token: {"plan": test_case["plan"]}
         }
-
-        with patch('auth.ACCOUNTS_FILE', return_value='test_accounts.json'), \
-             patch('builtins.open') as mock_open, \
-             patch('main.rate_limiter.is_allowed', return_value=True) as mock_limiter:
-
-            mock_open.return_value.__enter__.return_value.read.return_value = \
-                json.dumps(mock_accounts)
-
+        
+        received_plan = None
+        
+        def mock_is_allowed(auth_token, plan):
+            nonlocal received_plan
+            received_plan = plan
+            return True
+            
+        with patch('auth.Auth.accounts', new=mock_accounts), \
+             patch('rate_limit.limits.RateLimiter.is_allowed', side_effect=mock_is_allowed):
+                
             self.client.get(
                 "/joke",
                 headers={"Authorization": self.valid_token}
             )
-
-            mock_limiter.assert_called_once()
-            assert mock_limiter.call_args[0][1] == test_case["expected_plan"]
+            
+            assert received_plan == test_case["expected_plan"]

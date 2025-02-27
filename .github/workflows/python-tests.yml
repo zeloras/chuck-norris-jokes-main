@@ -1,4 +1,4 @@
-name: Python Tests
+name: Chuck Norris Jokes Tests
 
 on:
   push:
@@ -11,54 +11,36 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      redis:
-        image: redis:alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
-
-      - name: Cache pip packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('python/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        working-directory: ./python
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - uses: actions/checkout@v3
 
       - name: Create test accounts file
         run: |
           echo '{"1111-2222-3333": {"plan": "PRO"}}' > accounts.json
 
-      - name: Run tests
-        working-directory: ./python
+      - name: Run tests in Docker
+        uses: isbang/compose-action@v1.5.1
+        with:
+          compose-file: "./docker-compose.yml"
+          down-flags: "--volumes"
+          services: |
+            api
+            redis
+
+      - name: Run pytest with coverage
         run: |
-          pytest --cov=. --cov-report=xml
+          mkdir -p coverage
+          docker compose run --rm -v $(pwd)/coverage:/code/coverage api pytest --cov=. --cov-report=xml:/code/coverage/coverage.xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
+        continue-on-error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          file: ./python/coverage.xml
+          file: ./coverage/coverage.xml
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: zeloras/chuck-norris-jokes
