@@ -9,6 +9,11 @@ services:
     volumes:
       - ./accounts.json:/accounts.json:ro
       - ./python:/code
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - ACCOUNTS_FILE=/accounts.json
     depends_on:
       - redis
 

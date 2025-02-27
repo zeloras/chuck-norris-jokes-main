@@ -65,6 +65,18 @@ To run the service you can use this command
 ## Python
 The project is under the `python` folder.
 
+### Environment Variables
+The following environment variables are used by the Python service:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| REDIS_HOST | Redis server hostname | redis |
+| REDIS_PORT | Redis server port | 6379 |
+| REDIS_DB | Redis database number | 0 |
+| ACCOUNTS_FILE | Path to the accounts.json file | /accounts.json |
+
+These environment variables can be configured in the docker-compose.yml file or set directly in your environment when running the service outside of Docker.
+
 ### Running with Docker
 ```bash
 # Build and start the services
